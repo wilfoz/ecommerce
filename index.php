@@ -51,6 +51,43 @@ $app->get('/adm/logout', function(){
 	exit;
 });
 
+$app->get('/adm/users', function(){
+	User::verifyLogin();
+
+	$users = User::listAll();
+
+	$page = new PageAdm();
+	$page->setTpl("users", array(
+		'users' =>$users
+	));
+});
+
+$app->get('/adm/user/create', function(){
+	User::verifyLogin();
+	
+	$page = new PageAdm();
+	$page->setTpl("users-create");
+});
+
+$app->get("/adm/users/:iduser/delete", function($iduser){
+	User::verifyLogin();
+});
+
+$app->get("/adm/users/:iduser", function($iduser){
+	User::verifyLogin();
+	
+	$page = new PageAdm();
+	$page->setTpl("users-update");
+});
+
+$app->post('/adm/users/create', function(){
+	User::verifyLogin();
+});
+
+$app->post('/adm/users/:iduser', function($iduser){
+	User::verifyLogin();
+});
+
 $app->run();
 
  ?>
