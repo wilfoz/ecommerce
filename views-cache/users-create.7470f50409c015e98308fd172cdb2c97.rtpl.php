@@ -6,9 +6,9 @@
     Lista de Usuários
   </h1>
   <ol class="breadcrumb">
-    <li><a href="/admin"><i class="fa fa-dashboard"></i> Home</a></li>
-    <li><a href="/admin/users">Usuários</a></li>
-    <li class="active"><a href="/admin/users/create">Cadastrar</a></li>
+    <li><a href="/adm"><i class="fa fa-dashboard"></i> Home</a></li>
+    <li><a href="/adm/users">Usuários</a></li>
+    <li class="active"><a href="/adm/users/create">Cadastrar</a></li>
   </ol>
 </section>
 
@@ -23,7 +23,7 @@
         </div>
         <!-- /.box-header -->
         <!-- form start -->
-        <form role="form" action="/admin/users/create" method="post">
+        <form role="form" action="/adm/users/create" method="post">
           <div class="box-body">
             <div class="form-group">
               <label for="desperson">Nome</label>
