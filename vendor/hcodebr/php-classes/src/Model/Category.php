@@ -96,6 +96,35 @@
 
 			}
 		}
+		// metodo listagem site produtos
+		public function getProductsPage($page =1, $itensPerPage = 3)
+		{
+
+			$star = ($page - 1) * $itensPerPage;
+
+			$sql = new Sql();
+
+			$results = $sql->select("
+				SELECT SQL_CALC_FOUND_ROWS * FROM tb_products a
+					INNER JOIN tb_productscategories b
+					ON a.idproduct = b.idproduct
+					INNER JOIN tb_categories c
+					ON c.idcategory = :idcategory
+					LIMIT $page , $itensPerPage;
+
+			", array(
+				":idcategory"=>$this->getidcategory()
+			));
+
+			$resultsTotal = $sql->select("SELECT FOUND_ROWS() AS nrtotal");
+
+			return [
+				'data'=>Product::checkList($results),
+				'total'=>$resultsTotal[0]["nrtotal"],
+				'pages'=>ceil($resultsTotal[0]["nrtotal"] / $itensPerPage )
+				];
+
+		}
 
 
 		public function addProduct(Product $product)
