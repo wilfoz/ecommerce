@@ -97,20 +97,21 @@
 			}
 		}
 		// metodo listagem site produtos
-		public function getProductsPage($page =1, $itensPerPage = 3)
+		public function getProductsPage($page =1, $itensPerPage = 4)
 		{
 
-			$star = ($page - 1) * $itensPerPage;
+			$start = ($page - 1) * $itensPerPage;
 
 			$sql = new Sql();
 
 			$results = $sql->select("
-				SELECT SQL_CALC_FOUND_ROWS * FROM tb_products a
+				SELECT SQL_CALC_FOUND_ROWS * 
+					FROM tb_products a
 					INNER JOIN tb_productscategories b
 					ON a.idproduct = b.idproduct
 					INNER JOIN tb_categories c
 					ON c.idcategory = :idcategory
-					LIMIT $page , $itensPerPage;
+					LIMIT $start , $itensPerPage;
 
 			", array(
 				":idcategory"=>$this->getidcategory()
@@ -120,9 +121,9 @@
 
 			return [
 				'data'=>Product::checkList($results),
-				'total'=>$resultsTotal[0]["nrtotal"],
+				'total'=>(int)$resultsTotal[0]["nrtotal"],
 				'pages'=>ceil($resultsTotal[0]["nrtotal"] / $itensPerPage )
-				];
+			];
 
 		}
 
