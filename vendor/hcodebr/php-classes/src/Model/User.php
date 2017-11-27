@@ -10,6 +10,48 @@
 		const SESSION = "User";
 		const SECRET  = "HcodePhp7_Secret";
 
+		public static function getFromSession()
+		{
+			$user = new User();
+
+			if (isset($_SESSION[User::SESSION]) && (int)$_SESSION[User::SESSION]['iduser'] > 0) {
+				
+				$user->setData($_SESSION[User::SESSION]);
+			}
+
+			return $user;
+		}
+
+		public static function checkLogin()
+		{
+			if (!isset($_SESSION[User::SESSION])
+				||
+				!$_SESSION[User::SESSION]
+				||
+				!(int)$_SESSION[User::SESSION]["iduser"] >0) {
+
+				return false;
+			} else {
+
+				if ($inadmin === true && (bool)$_SESSION[User::SESSION]["iduser"] === true) 
+				{
+					
+					return true;
+
+				} else if ($inadmin === false) 
+				{
+					
+					return true;
+
+				} else 
+				{
+
+					return false;
+				}
+			}
+
+		}
+
 		public static function login($login, $password){
 
 			$sql = new Sql();
@@ -24,6 +66,7 @@
 			$data = $results[0];
 
 			if (password_verify($password, $data["despassword"]) === true) {
+
 				$user = new User();
 
 				$user->setData($data);
@@ -38,16 +81,11 @@
 			}
 		}
 
-		public static function verifyLogin($inadmin = true){
-			if (
-				!isset($_SESSION[User::SESSION])
-				||
-				!$_SESSION[User::SESSION]
-				||
-				!(int)$_SESSION[User::SESSION]["iduser"] >0
-				||
-				(bool)$_SESSION[User::SESSION]["inadmin"] !==$inadmin
-			) {
+		public static function verifyLogin($inadmin = true)
+		{
+			if (User::checkLogin($inadmin)) 
+			{
+
 				header("Location: /adm/login");
 				exit;
 			}

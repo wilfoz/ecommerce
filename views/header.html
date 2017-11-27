@@ -42,8 +42,8 @@
                         <ul>
                             <li><a href="#"><i class="fa fa-user"></i> Minha Conta</a></li>
                             <li><a href="#"><i class="fa fa-heart"></i> Lista de Desejos</a></li>
-                            <li><a href="#"><i class="fa fa-shopping-cart"></i> Meu Carrinho</a></li>
-                            <li><a href="#"><i class="fa fa-lock"></i> Login</a></li>
+                            <li><a href="/cart"><i class="fa fa-shopping-cart"></i> Meu Carrinho</a></li>
+                            <li><a href="/adm/login"><i class="fa fa-lock"></i> Login</a></li>
                         </ul>
                     </div>
                 </div>
@@ -74,3 +74,24 @@
         </div>
     </div> <!-- End header area -->
     
+    <div class="mainmenu-area">
+    <div class="container">
+        <div class="row">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+            </div> 
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/">Home</a></li>
+                    <li><a href="/products">Produtos</a></li>
+                    <li><a href="/cart">Carrinho</a></li>
+                </ul>
+            </div>  
+        </div>
+    </div>
+</div> <!-- End mainmenu area -->
