@@ -10,6 +10,8 @@
 
 		const SESSION = "Cart";
 
+		const SESSION_ERROR = "CartError";
+
 		public static function getFromSession()
 		{
 			$cart = new Cart();
@@ -101,6 +103,8 @@
 				":idproduct"=>$product->getidproduct()
 			]);
 
+			$this->getCalculateTotal();
+
 		}
 
 		public function removeProduct(Product $product, $all = false)
@@ -119,6 +123,8 @@
 					':idproduct'=>$product->getidproduct()
 				]);
 			}
+
+			$this->getCalculateTotal();
 
 		}
 
@@ -139,6 +145,154 @@
 			]);
 
 			return Product::checkList($rows);
+
+		}
+
+		public function getProductsTotals()
+		{
+			$sql = new Sql();
+
+			$results = $sql->select("
+				SELECT SUM(vlprice) AS vlprice, SUM(vlwidth) AS vlwidth, 
+					SUM(vlheight) AS vlheight, SUM(vllength) AS vllength, SUM(vlweight) AS vlweight,
+					COUNT(*) AS nrqtd
+					FROM tb_products a
+					INNER JOIN tb_cartsproducts b on a.idproduct = b.idproduct
+					WHERE b.idcart = :idcart AND dtremoved is NULL", [
+						"idcart"=>$this->getidcart()
+				]);
+
+			if (count($results) > 0) {
+				return $results[0];
+			}else {
+				return [];
+			}
+
+		}
+
+		public function setFreight($nrzipcode)
+		{
+
+			$nrzipcode = str_replace('-','',$nrzipcode);
+
+			$totals = $this->getProductsTotals();
+
+			if ($totals["vllength"] < 16) $totals["vllength"] = 16;
+
+			if ($totals['nrqtd'] > 0) {
+
+				// Gera a string de consulta (query) em formato URL a partir de um array associativo (ou indexado).
+				$qs = http_build_query([
+					'nCdEmpresa'=>'',
+					'sDsSenha'=>'',
+					'nCdServico'=>'40010',
+					'sCepOrigem'=>'85870220',
+					'sCepDestino'=>$nrzipcode,
+					'nVlPeso'=>$totals["vlweight"],
+					'nCdFormato'=>'1',
+					'nVlComprimento'=>$totals["vllength"],
+					'nVlAltura'=>$totals["vlheight"],
+					'nVlLargura'=>$totals["vlwidth"],
+					'nVlDiametro'=>'0',
+					'sCdMaoPropria'=>'S',
+					'nVlValorDeclarado'=>$totals["vlprice"],
+					'sCdAvisoRecebimento'=>'S'
+
+				]); 
+
+				$xml = simplexml_load_file("http://ws.correios.com.br/calculador/CalcPrecoPrazo.asmx/CalcPrecoPrazo?".$qs); //Ler informações em XML
+
+				$results = $xml->Servicos->cServico;
+
+				if ($results->MsgErro != '') {
+					
+					Cart::setMsgError($results->MsgErro);
+				} else {
+
+					Cart::clearMsgError();
+				}
+
+				$this->setnrdays($results->PrazoEntrega);
+				$this->setvlfreight(Cart::formatValueDecimal($results->Valor));
+				$this->setdeszipcode($nrzipcode);
+
+				$this->save();
+
+				return $results;
+
+			}else {
+
+			}
+
+		}
+
+		// Formata valor para decimal
+		public static function formatValueDecimal($value):float 
+		{
+
+			$value = str_replace(".", "", $value);
+
+			return str_replace(",", ".", $value);
+
+		}
+
+		// Tratamento para mensagens de erro do carrinho
+		public static function setMsgError($msg)
+		{
+
+			$_SESSION[Cart::SESSION_ERROR] = $msg;
+
+		}
+
+		public static function getMsgError()
+		{
+
+			$msg = (isset($_SESSION[Cart::SESSION_ERROR])) ? $_SESSION[Cart::SESSION_ERROR] : '';
+
+			Cart::clearMsgError();
+
+			return $msg;
+
+		}
+
+		public static function clearMsgError()
+		{
+
+			$_SESSION[Cart::SESSION_ERROR] = NULL;
+
+		}
+
+		// Metodo para atualizar o frete
+		public function updateFreight()
+		{
+
+			if ($this->getdeszipcode() !='') {
+				
+				$this->setFreight($this->getdeszipcode());
+			}
+
+		}
+
+		// Adicionar campos ao metodo getValues
+		public function getValues()
+		{
+
+			$this->getCalculateTotal();
+
+			return parent::getValues();
+
+		}
+		
+		// Metodo para calcular subtotal e total do Resumo
+		public function getCalculateTotal()
+		{
+			$this->updateFreight();
+
+			$totals = $this->getProductsTotals();
+
+			$this->setvlsubtotal($totals['vlprice']);
+
+			$this->setvltotal($totals['vlprice'] + $this->getvlfreight());
 
 		}
 	}
