@@ -9,6 +9,8 @@
 
 		const SESSION = "User";
 		const SECRET  = "HcodePhp7_Secret";
+		const ERROR   = "UserError";
+		const ERROR_REGISTER = "UserErrorRegister";
 
 		public static function getFromSession()
 		{
@@ -22,29 +24,30 @@
 			return $user;
 		}
 
-		public static function checkLogin()
+		public static function checkLogin($inadmin = true)
 		{
-			if (!isset($_SESSION[User::SESSION])
+			if (
+				!isset($_SESSION[User::SESSION])
 				||
 				!$_SESSION[User::SESSION]
 				||
 				!(int)$_SESSION[User::SESSION]["iduser"] >0) {
 
+				// Não esta logado
 				return false;
+
 			} else {
 
-				if ($inadmin === true && (bool)$_SESSION[User::SESSION]["iduser"] === true) 
+				if ($inadmin === true && (bool)$_SESSION[User::SESSION]["inadmin"] === true) 
 				{
+
+					return true;
+
+				} else if ($inadmin === false) {
 					
 					return true;
 
-				} else if ($inadmin === false) 
-				{
-					
-					return true;
-
-				} else 
-				{
+				} else {
 
 					return false;
 				}
@@ -83,12 +86,18 @@
 
 		public static function verifyLogin($inadmin = true)
 		{
-			if (User::checkLogin($inadmin)) 
-			{
+			if (!User::checkLogin($inadmin)){
 
-				header("Location: /adm/login");
-				exit;
-			}
+				if ($inadmin) {
+
+					header("Location: /adm/login");
+				}
+
+				} else {
+					header("Location: /login");
+				}
+
+			exit;
 		}
 
 		public static function logout(){
@@ -223,7 +232,8 @@
 
 		}
 
-		public static function setForgotUsed($idrecovery){
+		public static function setForgotUsed($idrecovery)
+		{
 			$sql = new Sql;
 
 			$sql->query("UPDATE tb_userspasswordsrecoveries SET dtrecovery = NOW() WHERE idrecovery = :idrecovery", array(
@@ -231,13 +241,44 @@
 			));
 		}
 
-		public function setPassword($password){
+		public function setPassword($password)
+		{
 			$sql = new Sql;
 
 			$sql->query("UPDATE tb_users SET despassword = :password WHERE iduser = :iduser", array(
 				":password"=>$password,
 				":iduser"=>$this->getiduser()
 			));
+		}
+
+		public static function setError($msg)
+		{
+
+			$_SESSION[User::ERROR] = $msg;
+
+		}
+
+		public static function getError()
+		{
+
+			$msg = (isset($_SESSION[User::ERROR]) && $_SESSION[User::ERROR]) ? $_SESSION[User::ERROR] : '';
+
+			User::clearError();
+
+		}
+
+		public static function clearError()
+		{
+
+			$_SESSION[User::ERROR] = NULL;
+
+		}
+
+		public static function setErrorRegister()
+		{
+
+			$_SESSION[User::ERROR_REGISTER] = $msg;
+
 		}
 	}
 
